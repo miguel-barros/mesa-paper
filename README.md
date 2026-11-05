@@ -12,7 +12,7 @@ Live numbers are not embedded in the app shell. The exporter stores them under a
 
 GitHub Pages is public and static. It **cannot authenticate users or return 401/404 based on a secret**. Anyone who has the full app link or private data URL can read the simulated data. The app shell, repository, file paths, and JSON are publicly retrievable. Do not publish or forward the private link. Bare `/d/` serves a static explanatory page, not a directory listing.
 
-The private path is generated once and stored at `/workspace/desk/private/data_path` with mode `0600`, outside this repository. It must not be pasted into tracked files, commit messages, issue reports, logs, or screenshots.
+The private path is generated once and stored at `/workspace/desk/private/data_path` with mode `0600`, outside this repository. It must not be pasted into tracked file contents, commit messages, issue reports, logs, or screenshots. The random directory name itself is necessarily present in the public Git tree because Pages serves files from that tree.
 
 ## Data and update loop
 
