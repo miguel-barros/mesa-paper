@@ -16,7 +16,7 @@ The private path is generated once and stored at `/workspace/desk/private/data_p
 
 ## Data and update loop
 
-The desk module `/workspace/desk/exporter.py` opens the existing SQLite WAL database read-only and writes `state.json`, `chart.json`, `activity.json`, and `coin/{mint}.json` atomically using temporary files and rename. Snapshots refresh every 15 seconds. A serialized Git publisher stages only the private data directory, commits meaningful changes, and coalesces pushes to about once per minute; unchanged snapshots do not create commits. The process-local publisher and a private, out-of-repository advisory lock protect concurrent Git operations. Credentials are removed from Git subprocess environments. Git identity is repository-local.
+The desk module `/workspace/desk/exporter.py` uses a dedicated read-only connection to the existing SQLite WAL database and writes `state.json`, `chart.json`, `activity.json`, and `coin/{mint}.json` atomically using temporary files and rename. Snapshots refresh every 15 seconds. A serialized Git publisher stages only the private data directory, commits meaningful changes, and coalesces pushes to about once per minute; unchanged snapshots do not create commits. The process-local publisher and a private, out-of-repository advisory lock protect concurrent Git operations. Credentials are removed from Git subprocess environments. Git identity is repository-local.
 
 - `state.json`: balance, today percentage, multiplier, PAPER mode, night boundary, timestamps, five agents with counts/current metrics/last decision/up to 20 recent decisions, positions, and allow-listed settings.
 - `chart.json`: stored balance samples and buy/sell marks. One sample produces a baseline, not invented history.
