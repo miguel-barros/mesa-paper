@@ -53,7 +53,7 @@
         <div class="page-heading"><div class="eyebrow">YOUR CONFIGURATION</div><h1 id="account-title">Account</h1><p>Read-only controls for a paper-only desk.</p></div>
         <section class="account-hero card"><span class="paper-badge large">PAPER MODE</span><h2>Practice, not capital.</h2><p>This desk simulates execution. It cannot place real orders or access funds.</p><div class="stack-row"><span>Simulated stack</span><strong id="account-stack">$—</strong></div></section>
         <section class="card settings-card"><div class="card-heading"><h2>Desk settings</h2><span class="lock-label">READ ONLY</span></div><dl id="settings-list"><div><span>Loading settings</span><dd>—</dd></div></dl><a class="primary-button" href="https://t.me/ylastx_mesa_bot" target="_blank" rel="noopener noreferrer">Change in Telegram <span aria-hidden="true">↗</span></a><p class="small-note">All changes are owner-only in <strong>@ylastx_mesa_bot</strong>.</p></section>
-        <a class="profile-link card" href="https://fomo.family/profile/ylastx" target="_blank" rel="noopener noreferrer"><span class="profile-avatar">y</span><span><strong>FOMO profile</strong><small>@ylastx · opens externally</small></span><span aria-hidden="true">↗</span></a>
+        <section class="card info-card execution-card"><div class="card-heading"><h2>Execution · Jupiter</h2><span class="lock-label">QUOTES ONLY</span></div><dl id="execution-list"><div><span>Loading</span><dd>—</dd></div></dl><p class="small-note">Simulated fills use real Jupiter Swap API V2 quotes (no wallet, nothing signed or sent). Network/priority fees and token-account rent are conservative estimates.</p><div id="execution-rejects"></div></section>
         <section class="card info-card"><h2>Notifications</h2><p>Web push isn’t available in plan B. Desk alerts and notifications are delivered through Telegram.</p></section>
         <section class="security-note"><strong>Private link, not login.</strong><p>This public static site uses an unguessable data URL. Anyone with your full link can read the simulated data. Don’t share it publicly.</p></section>
       </section>
@@ -63,10 +63,12 @@
         <section class="card chart-card"><div class="card-heading"><h2>Price · 1m candles</h2><span id="candle-count" class="subtle"></span></div><div class="segmented" role="group" aria-label="Coin chart range"><button class="coin-range" data-range="1H" type="button">1H</button><button class="coin-range" data-range="24H" type="button">24H</button><button class="coin-range selected" data-range="ALL" type="button">All</button></div><div class="chart-wrap coin-chart"><canvas id="coin-chart" aria-label="One-minute OHLC price candles" role="img"></canvas><div id="coin-chart-empty" class="chart-empty">No stored prices for this coin</div></div><div class="chart-legend"><span><i class="legend-line entry"></i>Entry</span><span><i class="legend-line stop"></i>Stop</span><span><i class="legend-line exit"></i>Exit</span></div></section>
         <div id="coin-stats" class="stats-grid"></div>
         <section id="coin-position" class="card detail-section"></section>
+        <section id="coin-route" class="card detail-section"></section>
         <section class="card detail-section"><div class="card-heading"><h2>Audit layers</h2><span id="audit-summary" class="subtle"></span></div><div id="coin-audits"></div></section>
         <section class="card detail-section"><div class="card-heading"><h2>Analyst scores</h2><span class="analyst-text">RULES</span></div><div id="coin-scores"></div></section>
-        <a id="coin-fomo" class="primary-button fomo-button" href="https://fomo.family/profile/ylastx" target="_blank" rel="noopener noreferrer">View on FOMO <span aria-hidden="true">↗</span></a>
-        <p class="small-note centered">External link only. Mesa never submits orders.</p>
+        <a id="coin-dex" class="primary-button link-button" href="https://dexscreener.com/solana" target="_blank" rel="noopener noreferrer">View on DexScreener <span aria-hidden="true">↗</span></a>
+        <a id="coin-jup" class="primary-button link-button secondary-button" href="https://jup.ag/" target="_blank" rel="noopener noreferrer">Open on Jupiter <span aria-hidden="true">↗</span></a>
+        <p class="small-note centered">External links only, no referral. Mesa never signs or submits orders.</p>
       </section>
     </main>
     <nav class="bottom-nav" aria-label="Main navigation">

@@ -28,7 +28,9 @@
     const ms = typeof value === 'number' ? value * 1000 : Date.parse(value);
     return Number.isFinite(ms) ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(ms)) + ' BRT' : '—';
   };
-  const fomo = mint => 'https://fomo.family/coin?address=' + encodeURIComponent(mint) + '&chainId=1399811149&source=share_link';
+  const dex = mint => 'https://dexscreener.com/solana/' + encodeURIComponent(mint);
+  const jup = mint => 'https://jup.ag/swap/SOL-' + encodeURIComponent(mint);
+  const pct = value => valid(value) ? number(value) + '%' : '—';
   const app = { path: '', state: null, chart: null, activity: [], coins: new Map(), view: 'home', previousView: 'home', mint: null, range: 'ALL', coinRange: 'ALL', filter: 'all', polling: false, failures: 0 };
 
   function setConnection(text, type = '') {
@@ -182,16 +184,41 @@
   function renderSettings() {
     const settings = app.state.settings || {};
     const rows = [
-      ['Trading mode', 'PAPER · simulated'], ['Ticket size', number(settings.stack_pct) + '% of stack'],
+      ['Trading mode', 'PAPER · simulated'], ['Ticket size', money(settings.ticket_usd)],
+      ['Max open positions', valid(settings.max_open_positions) ? String(settings.max_open_positions) : '—'],
+      ['Max daily loss', valid(settings.max_daily_loss_usd) ? money(settings.max_daily_loss_usd) + ' · auto-pause' : '—'],
+      ['Quote asset', settings.quote_asset || '—'],
+      ['Max price impact', valid(settings.max_price_impact_pct) ? number(settings.max_price_impact_pct) + '% per side' : '—'],
+      ['Max slippage', valid(settings.max_slippage_bps) ? number(settings.max_slippage_bps / 100) + '%' : '—'],
+      ['Max round-trip cost', valid(settings.max_round_trip_cost_pct) ? number(settings.max_round_trip_cost_pct) + '% of ticket' : '—'],
       ['Initial stop', valid(settings.stop_pct) ? '−' + number(settings.stop_pct) + '%' : '—'],
       ['Trailing stop', valid(settings.trail_pct) ? number(settings.trail_pct) + '% after ' + number(settings.trail_activation_pct) + '%' : '—'],
       ['Position timeout', valid(settings.timeout_hours) ? number(settings.timeout_hours) + ' hours' : '—'],
-      ['Small-ticket rule', settings.below_min === 'bump' ? 'Bump to minimum' : settings.below_min || '—'],
       ['Analyst', settings.analyst_mode === 'rules' ? 'Deterministic rules' : settings.analyst_mode || '—'],
       ['Timezone', settings.timezone || 'America/Sao_Paulo']
     ];
     const dl = $('settings-list'); dl.replaceChildren();
     for (const [label, value] of rows) { const row = node('div'); row.append(node('span', '', label), node('dd', '', value)); dl.append(row); }
+    renderExecution();
+  }
+  function renderExecution() {
+    const ex = app.state.execution || {}, q = ex.quotes || {}, rc = ex.route_checks || {};
+    const rows = [
+      ['Venue', ex.venue ? ex.venue + ' · ' + (ex.mode || 'quotes only') : '—'],
+      ['LIVE', ex.live ? 'ON' : 'OFF (no signing code)'],
+      ['Entries', ex.daily_loss_paused ? 'PAUSED · daily loss limit' : 'Active'],
+      ['Quotes tonight', valid(q.total) ? q.total + ' · ' + (q.ok || 0) + ' ok' : '—'],
+      ['No route', valid(q.no_route) ? String(q.no_route) : '—'],
+      ['Rate limited', valid(q.rate_limited) ? String(q.rate_limited) : '—'],
+      ['Route checks', valid(rc.total) ? (rc.passed || 0) + ' / ' + rc.total + ' passed' : '—'],
+      ['Avg est. round trip', pct(rc.avg_round_trip_cost_pct)]
+    ];
+    const dl = $('execution-list'); dl.replaceChildren();
+    for (const [label, value] of rows) { const row = node('div'); row.append(node('span', '', label), node('dd', '', value)); dl.append(row); }
+    const list = $('execution-rejects'); list.replaceChildren();
+    const rejects = Array.isArray(ex.recent_rejections) ? ex.recent_rejections.slice(0, 5) : [];
+    if (rejects.length) list.append(node('div', 'decision-heading', 'RECENT ROUTE REJECTIONS'));
+    for (const r of rejects) { const row = node('div', 'route-reject'); row.append(node('strong', '', (r.name || r.mint.slice(0, 6) + '…') + ' · '), document.createTextNode(r.reason + ' · ' + clock(r.time))); list.append(row); }
   }
   function navigate(view) {
     if (!['home', 'agents', 'activity', 'account'].includes(view)) return;
@@ -272,7 +299,7 @@
   function openCoin(mint) { app.previousView = app.view === 'coin' ? 'activity' : app.view; app.mint = mint; app.view = 'coin';
     for (const section of document.querySelectorAll('.view')) section.hidden = section.id !== 'view-coin';
     for (const button of document.querySelectorAll('.nav-button')) button.classList.remove('selected');
-    $('coin-name').textContent = 'Loading coin…'; $('coin-mint').textContent = ''; $('coin-price').textContent = '—'; $('coin-fomo').href = fomo(mint); $('coin-fomo').firstChild.textContent = 'Buy on FOMO ';
+    $('coin-name').textContent = 'Loading coin…'; $('coin-mint').textContent = ''; $('coin-price').textContent = '—'; $('coin-dex').href = dex(mint); $('coin-jup').href = jup(mint); $('coin-route').replaceChildren();
     $('coin-chart-empty').textContent = 'Loading stored prices…'; $('coin-audits').replaceChildren(); $('coin-scores').replaceChildren(); $('coin-position').replaceChildren(); $('coin-stats').replaceChildren();
     window.scrollTo({ top: 0, behavior: 'auto' }); loadCoin(mint, true);
   }
@@ -290,12 +317,30 @@
     }
   }
   $('coin-back').addEventListener('click', () => navigate(app.previousView === 'home' ? 'home' : 'activity'));
+  function renderRoute(coin) {
+    const box = $('coin-route'); box.replaceChildren();
+    const heading = node('div', 'card-heading'); heading.append(node('h2', '', 'Jupiter route'));
+    const r = coin.route; heading.append(node('span', 'lock-label', r ? (r.pass ? 'PASS' : 'REJECTED') : 'NOT QUOTED')); box.append(heading);
+    if (!r) { box.append(node('p', 'position-none', 'No Jupiter quote has been taken for this coin.')); }
+    else {
+      const grid = node('div', 'position-grid');
+      const b = r.buy_quote || {}, s = r.sell_quote || {};
+      const rows = [['Route', r.route_labels || b.route_labels || '—'], ['Router', b.router || '—'], ['Ticket', money(r.ticket_usd) + ' in ' + (r.quote_asset || 'SOL')],
+        ['Impact buy / sell', (valid(r.buy_impact_pct) ? number(Math.abs(r.buy_impact_pct)) + '%' : '—') + ' / ' + (valid(r.sell_impact_pct) ? number(Math.abs(r.sell_impact_pct)) + '%' : '—')],
+        ['Swap loss', money(r.swap_loss_usd)], ['Network est.', money(r.network_est_usd)], ['Rent est.', money(r.rent_est_usd)],
+        ['Round trip est.', valid(r.round_trip_cost_usd) ? money(r.round_trip_cost_usd) + ' · ' + pct(r.round_trip_cost_pct) : '—'],
+        ['Platform fee', valid(b.platform_fee_bps) ? b.platform_fee_bps + ' bps' : '—'], ['Quoted', clock(r.ts) + ' · ' + (r.purpose || '')]];
+      for (const [label, value] of rows) { const cell = node('div'); cell.append(node('span', '', label), node('strong', '', value)); grid.append(cell); }
+      box.append(grid, node('p', 'route-reason' + (r.pass ? '' : ' fail'), r.reason || ''));
+    }
+    const fails = Array.isArray(coin.quote_failures) ? coin.quote_failures : [];
+    for (const f of fails.slice(0, 3)) box.append(node('div', 'route-reject', (f.status || '') + ' · ' + (f.side || '') + ' · ' + (f.purpose || '') + ' · ' + clock(f.ts)));
+  }
   function renderCoin(coin) {
     $('coin-name').textContent = coin.name || coin.symbol || coin.mint;
     $('coin-symbol').textContent = (coin.symbol || 'COIN') + ' · PAPER';
     $('coin-mint').textContent = coin.mint; $('coin-mint').title = coin.mint;
-    $('coin-price').textContent = price(coin.price); $('coin-fomo').href = coin.coin_url || fomo(coin.mint);
-    $('coin-fomo').firstChild.textContent = coin.position && coin.position.status === 'open' ? 'Sell on FOMO ' : 'Buy on FOMO ';
+    $('coin-price').textContent = price(coin.price); $('coin-dex').href = dex(coin.mint); $('coin-jup').href = jup(coin.mint);
     const stats = $('coin-stats'); stats.replaceChildren();
     const statValues = Object.entries(coin.stats || {}).filter(([, value]) => valid(value)).slice(0, 6);
     if (!statValues.length) stats.append(node('div', 'empty-card', 'No market stats are stored for this coin.'));
@@ -307,9 +352,13 @@
     else {
       const p = coin.position, grid = node('div', 'position-grid');
       const rows = [['Size', money(p.size_usd)], ['Entry', price(p.entry_price)], ['Stop', price(p.stop_price)], ['Peak', price(p.peak_price)], ['Opened', day(p.opened_at)], ['Realized P&L', valid(p.pnl_usd) ? money(p.pnl_usd) : 'Open']];
+      if (p.route_label) rows.push(['Route', p.route_label]);
+      if (valid(p.entry_costs_usd)) rows.push(['Est. entry costs', money(p.entry_costs_usd)]);
+      if (valid(p.exit_value_usd)) rows.push(['Exit quote value', money(p.exit_value_usd)]);
       if (p.exit_reason) rows.push(['Exit rule', p.exit_reason]);
       for (const [label, value] of rows) { const box = node('div'); box.append(node('span', '', label), node('strong', '', value)); grid.append(box); } position.append(grid);
     }
+    renderRoute(coin);
     const audits = $('coin-audits'); audits.replaceChildren(); const layers = Array.isArray(coin.audit_layers) ? coin.audit_layers : [];
     $('audit-summary').textContent = layers.length ? layers.filter(a => a.pass && a.value !== 'not checked').length + ' / ' + layers.length + ' passed' : 'No audit stored';
     for (const layer of layers) {
