@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="A private-link, read-only view of a simulated Solana paper trading desk.">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Mesa · Paper desk</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Mesa home"><span class="brand-mark" aria-hidden="true">m</span><span>mesa<span class="green">.</span></span></a>
+      <span class="paper-badge">PAPER</span>
+    </header>
+    <div id="connection" class="connection" role="status" aria-live="polite"><span class="status-dot"></span><span id="connection-text">Waiting for private link</span></div>
+    <main>
+      <section id="view-home" class="view active" aria-labelledby="home-title">
+        <div class="eyebrow">SOLANA · SIMULATED</div><h1 id="home-title" class="sr-only">Paper desk home</h1>
+        <section class="balance-block" aria-label="Balance summary">
+          <div class="label-row"><span class="label">NET BALANCE</span><span id="balance-mode" class="subtle">Read only</span></div>
+          <div id="balance" class="balance">$—</div>
+          <div class="balance-footer"><span id="today-change" class="change neutral">— today</span><span id="last-updated" class="subtle"></span></div>
+        </section>
+        <section class="card chart-card" aria-labelledby="equity-heading">
+          <div class="card-heading"><div><div class="eyebrow">PERFORMANCE</div><h2 id="equity-heading">Equity curve</h2></div><span id="multiplier" class="metric-chip">—×</span></div>
+          <div class="segmented" role="group" aria-label="Balance chart range"><button class="range-button" data-range="1H" type="button">1H</button><button class="range-button" data-range="24H" type="button">24H</button><button class="range-button selected" data-range="ALL" type="button">All</button></div>
+          <div class="chart-wrap"><canvas id="balance-chart" aria-label="Paper balance over time" role="img"></canvas><div id="balance-chart-empty" class="chart-empty">Waiting for balance history</div></div>
+          <div class="chart-legend"><span><i class="legend-dot buy"></i>Buy</span><span><i class="legend-dot sell"></i>Sell</span><span id="chart-range-label">Entire session</span></div>
+        </section>
+        <div class="section-heading"><div><div class="eyebrow">LIVE PIPELINE</div><h2>Your agents</h2></div><button class="text-button" data-nav="agents" type="button">View all <span aria-hidden="true">›</span></button></div>
+        <div id="agent-carousel" class="agent-carousel"><div class="empty-card">Agent status will appear here.</div></div>
+        <div class="section-heading"><div><div class="eyebrow">THE LATEST</div><h2>Recent activity</h2></div><button class="text-button" data-nav="activity" type="button">See all <span aria-hidden="true">›</span></button></div>
+        <div id="home-activity" class="activity-list"><div class="empty-card">No activity yet. The desk is still listening.</div></div>
+        <p class="footnote"><span class="green">●</span> Paper trades only. No real funds are used.</p>
+      </section>
+      <section id="view-agents" class="view" aria-labelledby="agents-title" hidden>
+        <div class="page-heading"><div class="eyebrow">FIVE PERSPECTIVES</div><h1 id="agents-title">The desk</h1><p>Every decision, from discovery to risk.</p></div>
+        <div id="agents-list" class="agents-list"><div class="empty-card">Agent details will appear here.</div></div>
+      </section>
+      <section id="view-activity" class="view" aria-labelledby="activity-title" hidden>
+        <div class="page-heading"><div class="eyebrow">DECISION LOG</div><h1 id="activity-title">Activity</h1><p>Scans, checks, paper fills and exits.</p></div>
+        <div class="filter-row" role="group" aria-label="Activity filter"><button type="button" class="filter selected" data-filter="all">All</button><button type="button" class="filter" data-filter="review">Reviews</button><button type="button" class="filter" data-filter="trade">Trades</button></div>
+        <div id="activity-list" class="activity-list"><div class="empty-card">No activity yet.</div></div>
+      </section>
+      <section id="view-account" class="view" aria-labelledby="account-title" hidden>
+        <div class="page-heading"><div class="eyebrow">YOUR CONFIGURATION</div><h1 id="account-title">Account</h1><p>Read-only controls for a paper-only desk.</p></div>
+        <section class="account-hero card"><span class="paper-badge large">PAPER MODE</span><h2>Practice, not capital.</h2><p>This desk simulates execution. It cannot place real orders or access funds.</p><div class="stack-row"><span>Simulated stack</span><strong id="account-stack">$—</strong></div></section>
+        <section class="card settings-card"><div class="card-heading"><h2>Desk settings</h2><span class="lock-label">READ ONLY</span></div><dl id="settings-list"><div><span>Loading settings</span><dd>—</dd></div></dl><a class="primary-button" href="https://t.me/ylastx_mesa_bot" target="_blank" rel="noopener noreferrer">Change in Telegram <span aria-hidden="true">↗</span></a><p class="small-note">All changes are owner-only in <strong>@ylastx_mesa_bot</strong>.</p></section>
+        <a class="profile-link card" href="https://fomo.family/profile/ylastx" target="_blank" rel="noopener noreferrer"><span class="profile-avatar">y</span><span><strong>FOMO profile</strong><small>@ylastx · opens externally</small></span><span aria-hidden="true">↗</span></a>
+        <section class="card info-card"><h2>Notifications</h2><p>Web push isn’t available in plan B. Desk alerts and notifications are delivered through Telegram.</p></section>
+        <section class="security-note"><strong>Private link, not login.</strong><p>This public static site uses an unguessable data URL. Anyone with your full link can read the simulated data. Don’t share it publicly.</p></section>
+      </section>
+      <section id="view-coin" class="view" aria-labelledby="coin-name" hidden>
+        <button id="coin-back" class="back-button" type="button"><span aria-hidden="true">‹</span> Activity</button>
+        <div class="coin-title-row"><div><div id="coin-symbol" class="eyebrow">COIN DETAILS</div><h1 id="coin-name">Loading coin…</h1><div id="coin-mint" class="mint"></div></div><div class="coin-price-wrap"><strong id="coin-price">—</strong><span>last stored price</span></div></div>
+        <section class="card chart-card"><div class="card-heading"><h2>Price · 1m candles</h2><span id="candle-count" class="subtle"></span></div><div class="segmented" role="group" aria-label="Coin chart range"><button class="coin-range" data-range="1H" type="button">1H</button><button class="coin-range" data-range="24H" type="button">24H</button><button class="coin-range selected" data-range="ALL" type="button">All</button></div><div class="chart-wrap coin-chart"><canvas id="coin-chart" aria-label="One-minute OHLC price candles" role="img"></canvas><div id="coin-chart-empty" class="chart-empty">No stored prices for this coin</div></div><div class="chart-legend"><span><i class="legend-line entry"></i>Entry</span><span><i class="legend-line stop"></i>Stop</span><span><i class="legend-line exit"></i>Exit</span></div></section>
+        <div id="coin-stats" class="stats-grid"></div>
+        <section id="coin-position" class="card detail-section"></section>
+        <section class="card detail-section"><div class="card-heading"><h2>Audit layers</h2><span id="audit-summary" class="subtle"></span></div><div id="coin-audits"></div></section>
+        <section class="card detail-section"><div class="card-heading"><h2>Analyst scores</h2><span class="analyst-text">RULES</span></div><div id="coin-scores"></div></section>
+        <a id="coin-fomo" class="primary-button fomo-button" href="https://fomo.family/profile/ylastx" target="_blank" rel="noopener noreferrer">View on FOMO <span aria-hidden="true">↗</span></a>
+        <p class="small-note centered">External link only. Mesa never submits orders.</p>
+      </section>
+    </main>
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button type="button" class="nav-button selected" data-nav="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg><span>Home</span></button>
+      <button type="button" class="nav-button" data-nav="agents"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="3"/><path d="M9 2v4m6-4v4M8 12h.01M16 12h.01M9 16h6"/></svg><span>Agents</span></button>
+      <button type="button" class="nav-button" data-nav="activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Activity</span></button>
+      <button type="button" class="nav-button" data-nav="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3-7 8-7s8 3 8 7"/></svg><span>Account</span></button>
+    </nav>
+  </div>
+  <dialog id="private-link-dialog" aria-labelledby="private-link-title">
+    <form id="private-link-form" method="dialog">
+      <span class="brand-mark large-mark" aria-hidden="true">m</span><div class="eyebrow">PRIVATE DASHBOARD</div><h2 id="private-link-title">Connect your paper desk</h2><p>Paste the full private dashboard link supplied separately. The key stays in this browser’s local storage.</p>
+      <label for="private-link-input">Private dashboard link</label><input id="private-link-input" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" required placeholder="https://…/#d=…">
+      <p id="private-link-error" class="form-error" role="alert"></p><button class="primary-button" type="submit">Open dashboard</button><p class="small-note">This is link obscurity, not true access control. Anyone with the link can read the simulated data.</p>
+    </form>
+  </dialog>
+  <noscript><div class="noscript">JavaScript is required to read the desk’s JSON snapshots.</div></noscript>
+</body>
+</html>
